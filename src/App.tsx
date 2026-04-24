@@ -2,6 +2,11 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import AppLayout from "./layouts/AppLayout";
 import Home from "./pages/Home";
 import Aulas from "./pages/Aulas";
+import Atividades from "./pages/Atividades";
+import Mensagens from "./pages/Mensagens";
+import Calendario from "./pages/Calendario";
+import Perfil from "./pages/Perfil";
+import Configuracoes from "./pages/Configuracoes";
 
 function App() {
   return (
