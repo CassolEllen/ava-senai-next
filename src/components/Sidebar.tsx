@@ -27,7 +27,7 @@ export default function Sidebar() {
     <div className="w-64 bg-white border-r flex flex-col justify-between">
       {/* topo */}
       <div>
-        <div className="p-4 font-bold text-lg">🎓 SENAI AVA</div>
+        <div className="p-4 font-bold text-lg">SENAI AVA</div>
 
         <nav className="flex flex-col gap-1 px-2">
           <Link to="/" className={itemClass("/")}>

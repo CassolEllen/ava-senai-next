@@ -10,33 +10,60 @@ export default function AtividadeDetalhe() {
 
   async function handleUpload() {
     if (!file) {
-      alert("Selecione um arquivo antes de enviar.");
+      alert("Selecione um arquivo.");
       return;
     }
 
     setLoading(true);
 
-    const fileName = `atividade-${Date.now()}-${file.name}`;
+    const safeFileName = file.name
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .replace(/[^a-zA-Z0-9.]/g, "_")
+      .toLowerCase();
 
-    const { error } = await supabase.storage
+    const filePath = `${Date.now()}_${safeFileName}`;
+
+    const { error: uploadError } = await supabase.storage
       .from("submissions")
-      .upload(fileName, file);
+      .upload(filePath, file);
+
+    if (uploadError) {
+      console.error(uploadError);
+      alert("Erro ao enviar arquivo.");
+      setLoading(false);
+      return;
+    }
+
+    const { data: publicUrlData } = supabase.storage
+      .from("submissions")
+      .getPublicUrl(filePath);
+
+    const fileUrl = publicUrlData.publicUrl;
+
+    const { error: dbError } = await supabase.from("submissions").insert([
+      {
+        atividade_id: "atividade-1",
+        file_name: file.name,
+        file_url: fileUrl,
+        status: "Enviado",
+      },
+    ]);
 
     setLoading(false);
 
-    if (error) {
-      console.error(error);
-      alert("Erro ao enviar arquivo.");
-    } else {
-      alert("Arquivo enviado com sucesso! 🎉");
-      setFile(null);
+    if (dbError) {
+      console.error(dbError);
+      alert("Erro ao salvar no banco.");
+      return;
     }
+
+    alert("Atividade enviada com sucesso! 🚀");
+    setFile(null);
   }
 
   return (
     <div className="max-w-[900px] mx-auto space-y-6">
-
-      {/* VOLTAR */}
       <button
         onClick={() => navigate(-1)}
         className="flex items-center gap-2 text-sm text-slate-500 hover:text-blue-600"
@@ -45,9 +72,7 @@ export default function AtividadeDetalhe() {
         Voltar
       </button>
 
-      {/* CARD PRINCIPAL */}
       <div className="bg-white rounded-2xl p-6 shadow-[0_4px_20px_rgba(0,0,0,0.05)] space-y-4">
-
         <span className="bg-yellow-100 text-yellow-700 text-xs px-3 py-1 rounded-full font-semibold">
           Pendente
         </span>
@@ -60,18 +85,14 @@ export default function AtividadeDetalhe() {
           Estrutura de Dados · Prof. Carlos Souza
         </p>
 
-        <p className="text-sm text-slate-500">
-          Prazo: 01/04/2024
-        </p>
+        <p className="text-sm text-slate-500">Prazo: 01/04/2024</p>
 
         <div className="bg-slate-50 p-4 rounded-xl text-sm text-slate-600">
-          Desenvolver uma implementação de listas encadeadas em Java,
-          incluindo inserção, remoção e busca de elementos.
+          Desenvolver uma implementação de listas encadeadas em Java, incluindo
+          inserção, remoção e busca de elementos.
         </div>
 
-        {/* UPLOAD */}
         <div className="border-2 border-dashed rounded-xl p-6 flex flex-col items-center justify-center text-center gap-3">
-
           <Upload size={28} className="text-slate-400" />
 
           <p className="text-sm text-slate-500">
@@ -83,10 +104,8 @@ export default function AtividadeDetalhe() {
             onChange={(e) => setFile(e.target.files?.[0] || null)}
             className="text-sm"
           />
-
         </div>
 
-        {/* BOTÃO ENVIAR */}
         <button
           onClick={handleUpload}
           disabled={loading}
@@ -94,7 +113,6 @@ export default function AtividadeDetalhe() {
         >
           {loading ? "Enviando..." : "Enviar atividade"}
         </button>
-
       </div>
     </div>
   );
