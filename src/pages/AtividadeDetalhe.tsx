@@ -1,11 +1,46 @@
+import { useState } from "react";
+import { supabase } from "../lib/supabase";
 import { ArrowLeft, Upload } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 export default function AtividadeDetalhe() {
+  const [file, setFile] = useState<File | null>(null);
+  const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
+
+  async function handleUpload() {
+    if (!file) {
+      alert("Selecione um arquivo antes de enviar.");
+      return;
+    }
+
+    setLoading(true);
+
+    const fileName = `atividade-${Date.now()}-${file.name}`;
+
+    const { error } = await supabase.storage
+      .from("submissions")
+      .upload(fileName, file);
+
+    setLoading(false);
+
+    if (error) {
+      console.error(error);
+      alert("Erro ao enviar arquivo.");
+    } else {
+      alert("Arquivo enviado com sucesso! 🎉");
+      setFile(null);
+    }
+  }
+
   return (
     <div className="max-w-[900px] mx-auto space-y-6">
 
       {/* VOLTAR */}
-      <button className="flex items-center gap-2 text-sm text-slate-500 hover:text-blue-600">
+      <button
+        onClick={() => navigate(-1)}
+        className="flex items-center gap-2 text-sm text-slate-500 hover:text-blue-600"
+      >
         <ArrowLeft size={16} />
         Voltar
       </button>
@@ -40,20 +75,24 @@ export default function AtividadeDetalhe() {
           <Upload size={28} className="text-slate-400" />
 
           <p className="text-sm text-slate-500">
-            Arraste seu arquivo ou clique para selecionar
+            {file ? `Arquivo selecionado: ${file.name}` : "Selecione um arquivo"}
           </p>
 
-          <input type="file" className="hidden" />
-
-          <button className="bg-blue-600 text-white px-5 py-2 rounded-lg text-sm font-semibold hover:bg-blue-700 transition">
-            Selecionar arquivo
-          </button>
+          <input
+            type="file"
+            onChange={(e) => setFile(e.target.files?.[0] || null)}
+            className="text-sm"
+          />
 
         </div>
 
         {/* BOTÃO ENVIAR */}
-        <button className="w-full bg-green-600 text-white py-3 rounded-xl font-semibold hover:bg-green-700 transition">
-          Enviar atividade
+        <button
+          onClick={handleUpload}
+          disabled={loading}
+          className="w-full bg-green-600 text-white py-3 rounded-xl font-semibold hover:bg-green-700 transition disabled:opacity-50"
+        >
+          {loading ? "Enviando..." : "Enviar atividade"}
         </button>
 
       </div>
