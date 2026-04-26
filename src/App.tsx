@@ -2,6 +2,8 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import AppLayout from "./layouts/AppLayout";
 import Home from "./pages/Home";
 import Aulas from "./pages/Aulas";
+import Cursos from "./pages/Cursos";
+import CursoDetalhe from "./pages/CursoDetalhe";
 import Atividades from "./pages/Atividades";
 import AtividadeDetalhe from "./pages/AtividadeDetalhe";
 import Mensagens from "./pages/Mensagens";
@@ -18,6 +20,8 @@ function App() {
           <Route path="aulas" element={<Aulas />} />
           <Route path="atividades" element={<Atividades />} />
           <Route path="atividades/:id" element={<AtividadeDetalhe />} />
+          <Route path="cursos" element={<Cursos />} />
+          <Route path="cursos/:id" element={<CursoDetalhe />} />
           <Route path="mensagens" element={<Mensagens />} />
           <Route path="calendario" element={<Calendario />} />
           <Route path="perfil" element={<Perfil />} />
