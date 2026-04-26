@@ -1,5 +1,7 @@
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { ClipboardList, ChevronRight, Clock } from "lucide-react";
+import { supabase } from "../lib/supabase";
 
 const atividades = [
   {
@@ -16,7 +18,7 @@ const atividades = [
     disciplina: "Big Data, Analytics e Inteligência Artificial",
     professor: "Prof. Victor Cézar Bonatti Carvalho",
     prazo: "05/06/2024 23:59",
-    status: "Enviado",
+    status: "Pendente",
   },
   {
     id: "atividade-3",
@@ -28,7 +30,62 @@ const atividades = [
   },
 ];
 
+type Submission = {
+  atividade_id: string;
+};
+
+type Filtro = "todas" | "pendente" | "enviado" | "atrasado";
+
 export default function Atividades() {
+  const [filtro, setFiltro] = useState<Filtro>("todas");
+  const [submittedActivityIds, setSubmittedActivityIds] = useState<string[]>([]);
+
+  async function fetchSubmissions() {
+    const { data, error } = await supabase
+      .from("submissions")
+      .select("atividade_id");
+
+    if (error) {
+      console.error(error);
+      return;
+    }
+
+    const ids = Array.from(
+      new Set((data as Submission[]).map((item) => item.atividade_id))
+    );
+
+    setSubmittedActivityIds(ids);
+  }
+
+  useEffect(() => {
+    fetchSubmissions();
+  }, []);
+
+  const atividadesComStatus = atividades.map((atividade) => ({
+    ...atividade,
+    status: submittedActivityIds.includes(atividade.id)
+      ? "Enviado"
+      : atividade.status,
+  }));
+
+  const total = atividadesComStatus.length;
+  const pendentes = atividadesComStatus.filter(
+    (atividade) => atividade.status === "Pendente"
+  ).length;
+  const enviadas = atividadesComStatus.filter(
+    (atividade) => atividade.status === "Enviado"
+  ).length;
+  const atrasadas = atividadesComStatus.filter(
+    (atividade) => atividade.status === "Atrasado"
+  ).length;
+
+  const atividadesFiltradas = atividadesComStatus.filter((atividade) => {
+    if (filtro === "pendente") return atividade.status === "Pendente";
+    if (filtro === "enviado") return atividade.status === "Enviado";
+    if (filtro === "atrasado") return atividade.status === "Atrasado";
+    return true;
+  });
+
   return (
     <div className="max-w-[900px] mx-auto space-y-6">
       <header className="flex items-center gap-3">
@@ -38,29 +95,56 @@ export default function Atividades() {
 
         <div>
           <h1 className="text-2xl font-bold">Atividades</h1>
-          <p className="text-sm text-gray-500">1 pendente</p>
+          <p className="text-sm text-gray-500">
+            {pendentes} {pendentes === 1 ? "pendente" : "pendentes"}
+          </p>
         </div>
       </header>
 
-      <div className="flex gap-3">
-        <Filter active label="Todas (3)" />
-        <Filter label="Pendente (1)" />
-        <Filter label="Enviadas (1)" />
-        <Filter label="Atrasadas (1)" />
+      <div className="flex gap-3 flex-wrap">
+        <Filter
+          active={filtro === "todas"}
+          label={`Todas (${total})`}
+          onClick={() => setFiltro("todas")}
+        />
+        <Filter
+          active={filtro === "pendente"}
+          label={`Pendente (${pendentes})`}
+          onClick={() => setFiltro("pendente")}
+        />
+        <Filter
+          active={filtro === "enviado"}
+          label={`Enviadas (${enviadas})`}
+          onClick={() => setFiltro("enviado")}
+        />
+        <Filter
+          active={filtro === "atrasado"}
+          label={`Atrasadas (${atrasadas})`}
+          onClick={() => setFiltro("atrasado")}
+        />
       </div>
 
       <section className="grid grid-cols-2 gap-5">
-        {atividades.map((atividade) => (
-          <AtividadeCard key={atividade.titulo} {...atividade} />
+        {atividadesFiltradas.map((atividade) => (
+          <AtividadeCard key={atividade.id} {...atividade} />
         ))}
       </section>
     </div>
   );
 }
 
-function Filter({ label, active = false }: { label: string; active?: boolean }) {
+function Filter({
+  label,
+  active = false,
+  onClick,
+}: {
+  label: string;
+  active?: boolean;
+  onClick: () => void;
+}) {
   return (
     <button
+      onClick={onClick}
       className={`px-5 py-2 rounded-xl text-sm font-semibold transition ${
         active
           ? "bg-blue-700 text-white shadow-sm"
