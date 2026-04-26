@@ -3,6 +3,7 @@ import { ClipboardList, ChevronRight, Clock } from "lucide-react";
 
 const atividades = [
   {
+    id: "atividade-1",
     titulo: "Trabalho Prático de Listas Encadeadas",
     disciplina: "Estrutura de Dados",
     professor: "Prof. Doglas André Finco",
@@ -10,6 +11,7 @@ const atividades = [
     status: "Pendente",
   },
   {
+    id: "atividade-2",
     titulo: "Desafio 3 - Big Data, Analytics e Inteligência Artificial",
     disciplina: "Big Data, Analytics e Inteligência Artificial",
     professor: "Prof. Victor Cézar Bonatti Carvalho",
@@ -17,6 +19,7 @@ const atividades = [
     status: "Enviado",
   },
   {
+    id: "atividade-3",
     titulo: "Atividade Prática - Falhas de Implantação",
     disciplina: "Implantação de Sistemas",
     professor: "Prof. Maximiano",
@@ -70,12 +73,14 @@ function Filter({ label, active = false }: { label: string; active?: boolean }) 
 }
 
 function AtividadeCard({
+  id,
   titulo,
   disciplina,
   professor,
   prazo,
   status,
 }: {
+  id: string;
   titulo: string;
   disciplina: string;
   professor: string;
@@ -93,7 +98,7 @@ function AtividadeCard({
 
   return (
     <article
-      onClick={() => navigate("/atividade")}
+      onClick={() => navigate(`/atividades/${id}`)}
       className="bg-white rounded-2xl p-6 shadow-[0_4px_20px_rgba(0,0,0,0.05)] flex justify-between gap-4 hover:scale-[1.01] transition cursor-pointer"
     >
       <div className="space-y-3">
